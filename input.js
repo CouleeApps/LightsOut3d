@@ -15,6 +15,10 @@ MouseEvent.prototype.getPosition = function() {
 	return {x: this.pageX, y: this.pageY};
 };
 
+TouchEvent.prototype.getPosition = function() {
+	return {x: this.pageX, y: this.pageY};
+};
+
 document.body.onmousedown = function(e) {
 	if (game.state === LightsOut3d.STATE_PLAYING) {
 		game.onMouseDown(e.getPosition());
