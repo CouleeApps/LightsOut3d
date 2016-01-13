@@ -26,8 +26,8 @@ LightsOut3d.prototype.createScene = function() {
 
 	//Basic camera is fine
 	this.camera = new THREE.PerspectiveCamera(70, this.windowSize.x / this.windowSize.y, 0.1, 1000);
-};
-LightsOut3d.prototype.createPlanes = function() {
+
+	//Ambient lighting so everything isn't dark
 	this.ambient = new THREE.AmbientLight(0x887777);
 	this.scene.add(this.ambient);
 
@@ -40,7 +40,8 @@ LightsOut3d.prototype.createPlanes = function() {
 	this.backsun = new THREE.DirectionalLight(0x666688);
 	this.backsun.position.copy(new THREE.Vector3(-1, -0.6, -0.2).normalize());
 	this.scene.add(this.backsun);
-
+};
+LightsOut3d.prototype.createBoard = function() {
 	//Each should be offset by this much so they center around 0 0 0
 	var offset = new THREE.Vector2(-(this.sideSize - 1) / 2, -(this.sideSize - 1) / 2);
 
@@ -55,8 +56,12 @@ LightsOut3d.prototype.createPlanes = function() {
 			}
 		}
 	}
-
-	this.render();
+};
+LightsOut3d.prototype.deleteBoard = function() {
+	this.faces.forEach(function(face) {
+		this.scene.remove(face.mesh);
+	}, this);
+	this.faces = [];
 };
 LightsOut3d.prototype.toggleFace = function(face) {
 	var connections = face.getConnections(new THREE.Vector2(0, 0), new THREE.Vector2(this.sideSize - 1, this.sideSize - 1));
@@ -93,6 +98,12 @@ LightsOut3d.prototype.nextLevel = function() {
 	this.level ++;
 	this.state = LightsOut3d.STATE_PLAYING;
 
+	if (this.level > 8 && Math.log2(this.level) === Math.floor(Math.log2(this.level))) {
+		this.sideSize ++;
+		this.deleteBoard();
+		this.createBoard();
+	}
+
 	this.resetBoard();
 	this.scrambleBoard(this.level);
 	$("#title").text("Level " + this.level);
@@ -105,7 +116,7 @@ LightsOut3d.prototype.init = function() {
 	this.createRenderer();
 
 	//Create the actual board
-	this.createPlanes();
+	this.createBoard();
 
 	//Start everything!
 	this.render();
@@ -118,7 +129,7 @@ LightsOut3d.prototype.render = function() {
 	this.renderer.render(this.scene, this.camera);
 
 	//Update the camera position to orbit around our cube in the center
-	this.camera.position.copy(new THREE.Vector3(0, 0, 6).applyMatrix4(this.rotation));
+	this.camera.position.copy(new THREE.Vector3(0, 0, this.sideSize * 2).applyMatrix4(this.rotation));
 	this.camera.setRotationFromMatrix(this.rotation);
 };
 
