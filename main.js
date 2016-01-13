@@ -19,7 +19,7 @@ LightsOut3d.prototype.createRenderer = function() {
 	this.renderer = new THREE.WebGLRenderer();
 	this.renderer.setSize(this.windowSize.x, this.windowSize.y);
 	document.body.insertBefore(this.renderer.domElement, document.body.children[0]);
-}
+};
 LightsOut3d.prototype.createScene = function() {
 	//Create our scene for everything
 	this.scene = new THREE.Scene();
@@ -73,14 +73,16 @@ LightsOut3d.prototype.scrambleBoard = function(count) {
 	}
 };
 LightsOut3d.prototype.isWinning = function() {
-	for	(var i = 0; i < this.faces.length; i ++) {
+	for (var i = 0; i < this.faces.length; i ++) {
+		//If they haven't unlit a face, they haven't won
 		if (this.faces[i].state)
 			return false;
 	}
 	return true;
 };
 LightsOut3d.prototype.resetBoard = function() {
-	for	(var i = 0; i < this.faces.length; i ++) {
+	for (var i = 0; i < this.faces.length; i ++) {
+		//Only have to reset active ones
 		if (this.faces[i].state) {
 			this.faces[i].state = false;
 			this.faces[i].setMaterial(this.stateMaterial[0]);
@@ -109,13 +111,18 @@ LightsOut3d.prototype.init = function() {
 	this.render();
 };
 LightsOut3d.prototype.render = function() {
+	//So we can render again
 	requestAnimationFrame(this.render.bind(this));
+
+	//Actually render the scene! Hurrah!
 	this.renderer.render(this.scene, this.camera);
 
+	//Update the camera position to orbit around our cube in the center
 	this.camera.position.copy(new THREE.Vector3(0, 0, 6).applyMatrix4(this.rotation));
 	this.camera.setRotationFromMatrix(this.rotation);
 };
 
+//Game states
 LightsOut3d.STATE_MENU = 0;
 LightsOut3d.STATE_PLAYING = 1;
 LightsOut3d.STATE_ANIMATING = 2;
