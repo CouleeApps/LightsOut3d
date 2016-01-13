@@ -69,7 +69,7 @@ LightsOut3d.prototype.onMouseUp = function(position) {
 	this.mouseDown = false;
 
 	//We count a click if they don't move the mouse
-	if (this.mouseFirst.x == position.x && this.mouseFirst.y == position.y && !this.mouseDrag) {
+	if (!this.mouseDrag) {
 		var domPos = $(this.renderer.domElement).position();
 		position = {x: position.x - (domPos.left - window.scrollX), y: position.y - (domPos.top - window.scrollY)};
 		var relMouse = new THREE.Vector2((position.x / this.windowSize.x) * 2 - 1, (-position.y / this.windowSize.y) * 2 + 1);
