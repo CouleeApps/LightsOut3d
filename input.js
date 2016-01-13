@@ -44,7 +44,7 @@ document.ontouchstart = function(e) {
 		e.preventDefault();
 	}
 };
-document.onmouseup = function(e) {
+document.ontouchup = function(e) {
 	if (game.state === LightsOut3d.STATE_PLAYING) {
 		game.onMouseUp(e.getPosition());
 		e.preventDefault();
