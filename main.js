@@ -126,6 +126,3 @@ LightsOut3d.prototype.render = function() {
 LightsOut3d.STATE_MENU = 0;
 LightsOut3d.STATE_PLAYING = 1;
 LightsOut3d.STATE_ANIMATING = 2;
-
-var game = new LightsOut3d(window.innerWidth, window.innerHeight);
-game.init();
