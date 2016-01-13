@@ -16,35 +16,52 @@ MouseEvent.prototype.getPosition = function() {
 };
 
 document.body.onmousedown = function(e) {
-	game.onMouseDown(e.getPosition());
+	if (game.state === LightsOut3d.STATE_PLAYING) {
+		game.onMouseDown(e.getPosition());
+	}
 	return game.state === LightsOut3d.STATE_MENU;
 };
 document.body.onmouseup = function(e) {
-	game.onMouseUp(e.getPosition());
+	if (game.state === LightsOut3d.STATE_PLAYING) {
+		game.onMouseUp(e.getPosition());
+	}
 };
 document.body.onmousemove = function(e) {
-	game.onMouseMove(e.getPosition());
+	if (game.state === LightsOut3d.STATE_PLAYING) {
+		game.onMouseMove(e.getPosition());
+	}
 };
 document.body.onselectstart = function(e) {
 	return game.state === LightsOut3d.STATE_MENU;
+};
+document.ontouchstart = function(e) {
+	if (game.state === LightsOut3d.STATE_PLAYING) {
+		game.onMouseDown(e.getPosition());
+		e.preventDefault();
+	}
+};
+document.ontouchmove = function(e) {
+	if (game.state === LightsOut3d.STATE_PLAYING) {
+		game.onMouseUp(e.getPosition());
+		e.preventDefault();
+	}
+};
+document.ontouchend = function(e) {
+	if (game.state === LightsOut3d.STATE_PLAYING) {
+		game.onMouseMove(e.getPosition());
+	}
 };
 window.onresize = function(e) {
 	game.updateSize();
 };
 
 LightsOut3d.prototype.onMouseDown = function(position) {
-	if (this.state != LightsOut3d.STATE_PLAYING)
-		return;
-
 	this.mouseDown = true;
 	this.mouseDrag = false;
 	this.mouseLast.copy(position);
 	this.mouseFirst.copy(position);
 };
 LightsOut3d.prototype.onMouseUp = function(position) {
-	if (this.state != LightsOut3d.STATE_PLAYING)
-		return;
-
 	this.mouseDown = false;
 
 	//We count a click if they don't move the mouse
@@ -70,9 +87,6 @@ LightsOut3d.prototype.onMouseUp = function(position) {
 	this.mouseDrag = false;
 };
 LightsOut3d.prototype.onMouseMove = function(position) {
-	if (this.state != LightsOut3d.STATE_PLAYING)
-		return;
-
 	if (this.mouseDown) {
 		var movement = {x: position.x - this.mouseLast.x, y: position.y - this.mouseLast.y};
 		this.rotation.multiply(new THREE.Matrix4().makeRotationX(-movement.y * 0.01));
