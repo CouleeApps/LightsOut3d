@@ -13,6 +13,8 @@ LightsOut3d = function(x, y) {
 	this.sideSize = 3;
 	this.level = 0;
 	this.state = LightsOut3d.STATE_MENU;
+	this.lastTimestamp = 0;
+	this.animation = {state: LightsOut3d.ANIMATION_STATE_SPINNING, spinTime: 10000};
 };
 LightsOut3d.prototype.createRenderer = function() {
 	//Set up the renderer
@@ -56,6 +58,10 @@ LightsOut3d.prototype.createBoard = function() {
 			}
 		}
 	}
+
+	//Update the camera position to orbit around our cube in the center
+	this.camera.position.copy(new THREE.Vector3(0, 0, this.sideSize * 2).applyMatrix4(this.rotation));
+	this.camera.setRotationFromMatrix(this.rotation);
 };
 LightsOut3d.prototype.deleteBoard = function() {
 	this.faces.forEach(function(face) {
@@ -74,7 +80,7 @@ LightsOut3d.prototype.toggleFace = function(face) {
 LightsOut3d.prototype.scrambleBoard = function(count) {
 	for (var i = 0; i < count; i ++) {
 		var face = this.faces[Math.floor(Math.random() * this.faces.length)];
-		this.toggleFace(face);
+		setTimeout(function(game, face) { game.toggleFace(face); }, i * (this.animation.spinTime / count), this, face);
 	}
 };
 LightsOut3d.prototype.isWinning = function() {
@@ -94,9 +100,19 @@ LightsOut3d.prototype.resetBoard = function() {
 		}
 	}
 };
+LightsOut3d.prototype.beginGame = function() {
+	if (this.state === LightsOut3d.STATE_ANIMATING)
+		return;
+
+	if (this.level === 0) {
+		this.animation.spinTime = 1500;
+		this.nextLevel();
+	} else {
+		this.startWinAnimation();
+	}
+};
 LightsOut3d.prototype.nextLevel = function() {
 	this.level ++;
-	this.state = LightsOut3d.STATE_PLAYING;
 
 	if (this.level > 8 && Math.log2(this.level) === Math.floor(Math.log2(this.level))) {
 		this.sideSize ++;
@@ -107,6 +123,26 @@ LightsOut3d.prototype.nextLevel = function() {
 	this.resetBoard();
 	this.scrambleBoard(this.level);
 	$("#title").text("Level " + this.level);
+
+	this.state = LightsOut3d.STATE_ANIMATING;
+	this.animation.state = LightsOut3d.ANIMATION_STATE_SPINNING;
+	setTimeout(function(game) { game.startLevel(); }, this.animation.spinTime, this);
+};
+LightsOut3d.prototype.startLevel = function() {
+	this.state = LightsOut3d.STATE_PLAYING;
+	this.animation.state = LightsOut3d.ANIMATION_STATE_STOPPED;
+};
+LightsOut3d.prototype.startWinAnimation = function() {
+	this.animation.spinTime = 500;
+	this.nextLevel();
+};
+LightsOut3d.prototype.animateToOrientation = function(quat, duration) {
+	this.animation.start = new THREE.Quaternion();
+	this.animation.start.setFromRotationMatrix(this.rotation);
+	this.animation.end = quat;
+	this.animation.time = 0;
+	this.animation.duration = duration;
+	this.animation.state = LightsOut3d.ANIMATION_STATE_INTERPOLATING;
 };
 LightsOut3d.prototype.init = function() {
 	//Initialize the base scene
@@ -120,13 +156,49 @@ LightsOut3d.prototype.init = function() {
 
 	//Start everything!
 	this.render();
+
+	//Set up initial animation
+	this.rotation.makeRotationFromQuaternion(new THREE.Quaternion(0, 0, 0, 1).setFromAxisAngle(new THREE.Vector3(0, 0.707, 0.707), Math.PI / 2));
+
+	setInterval(function(game) {
+		if (game.state == LightsOut3d.STATE_MENU) {
+			var face = game.faces[Math.floor(Math.random() * game.faces.length)];
+			game.toggleFace(face);
+		}
+	}, 1000, this);
 };
-LightsOut3d.prototype.render = function() {
+LightsOut3d.prototype.render = function(timestamp) {
+	//Get the delta time
+	var deltaTime = 0;
+	if (this.lastTimestamp) {
+		deltaTime = timestamp - this.lastTimestamp;
+	}
+	this.lastTimestamp = timestamp;
+
 	//So we can render again
 	requestAnimationFrame(this.render.bind(this));
 
 	//Actually render the scene! Hurrah!
 	this.renderer.render(this.scene, this.camera);
+
+	if (this.animation.state !== LightsOut3d.ANIMATION_STATE_STOPPED) {
+		this.animation.time += deltaTime;
+		switch (this.animation.state) {
+			case LightsOut3d.ANIMATION_STATE_INTERPOLATING:
+				var quat = new THREE.Quaternion();
+				quat.copy(this.animation.start);
+				quat.slerp(this.animation.end, this.animation.time / this.animation.duration);
+				this.rotation.makeRotationFromQuaternion(quat);
+				break;
+			case LightsOut3d.ANIMATION_STATE_SPINNING:
+				this.rotation.multiply(new THREE.Matrix4().makeRotationY(6.28 * (deltaTime / this.animation.spinTime)));
+				break;
+		}
+		if (this.animation.time > this.animation.duration) {
+			this.animation.time = this.animation.duration;
+			this.animation.state = LightsOut3d.ANIMATION_STATE_SPINNING;
+		}
+	}
 
 	//Update the camera position to orbit around our cube in the center
 	this.camera.position.copy(new THREE.Vector3(0, 0, this.sideSize * 2).applyMatrix4(this.rotation));
@@ -137,3 +209,7 @@ LightsOut3d.prototype.render = function() {
 LightsOut3d.STATE_MENU = 0;
 LightsOut3d.STATE_PLAYING = 1;
 LightsOut3d.STATE_ANIMATING = 2;
+
+LightsOut3d.ANIMATION_STATE_STOPPED = 0;
+LightsOut3d.ANIMATION_STATE_INTERPOLATING = 1;
+LightsOut3d.ANIMATION_STATE_SPINNING = 2;

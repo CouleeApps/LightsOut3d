@@ -92,7 +92,7 @@ LightsOut3d.prototype.onMouseUp = function(position) {
 			this.toggleFace(found);
 
 			if (this.isWinning()) {
-				this.nextLevel();
+				this.startWinAnimation();
 			}
 		}
 	}
