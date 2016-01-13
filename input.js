@@ -44,13 +44,13 @@ document.ontouchstart = function(e) {
 		e.preventDefault();
 	}
 };
-document.ontouchmove = function(e) {
+document.onmouseup = function(e) {
 	if (game.state === LightsOut3d.STATE_PLAYING) {
 		game.onMouseUp(e.getPosition());
 		e.preventDefault();
 	}
 };
-document.ontouchend = function(e) {
+document.ontouchmove = function(e) {
 	if (game.state === LightsOut3d.STATE_PLAYING) {
 		game.onMouseMove(e.getPosition());
 	}
