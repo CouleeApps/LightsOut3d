@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.js"></script>
+    <style>
+        canvas {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            position: absolute;
+            z-index: -1;
+        }
+        html {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            color: #fff;
+        }
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">Lights Out: 3D</h1>
+        <button class="btn btn-primary" onclick="game.nextLevel();">Start</button>
+    </div>
+
+    <script src="face.js"></script>
+    <script src="main.js"></script>
+    <script src="input.js"></script>
+</body>
+</html>
