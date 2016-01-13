@@ -16,7 +16,14 @@ MouseEvent.prototype.getPosition = function() {
 };
 
 TouchEvent.prototype.getPosition = function() {
-	return {x: this.pageX, y: this.pageY};
+	if (typeof(this.pageX) !== "undefined" && typeof(this.pageY) !== "undefined")
+		return {x: this.pageX, y: this.pageY};
+	if (typeof(this.touches) !== "undefined" && this.touches.length) {
+		var touch = this.touches[0];
+		return {x: touch.pageX, y: touch.pageY};
+	}
+	//Unknown
+	return {x: 0, y: 0};
 };
 
 document.body.onmousedown = function(e) {
